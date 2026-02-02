@@ -1,45 +1,48 @@
-import nodemailer from "nodemailer";
+import { Resend } from "resend";
 
-let transporter;
+let resendClient;
 
-function createTransporter() {
-  const host = process.env.SMTP_HOST;
-  const port = process.env.SMTP_PORT ? Number(process.env.SMTP_PORT) : null;
-  const user = process.env.SMTP_USER;
-  const pass = process.env.SMTP_PASS;
-
-  if (!host || !port || !user || !pass) {
+function getResendClient() {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) {
     return null;
   }
 
-  return nodemailer.createTransport({
-    host,
-    port,
-    secure: process.env.SMTP_SECURE === "true" || port === 465,
-    auth: {
-      user,
-      pass,
-    },
-  });
+  if (!resendClient) {
+    resendClient = new Resend(apiKey);
+  }
+
+  return resendClient;
+}
+
+function getFromAddress() {
+  const explicitFrom = process.env.RESEND_FROM;
+  if (explicitFrom) {
+    return explicitFrom;
+  }
+
+  const domain = process.env.RESEND_DOMAIN;
+  if (domain) {
+    return `no-reply@${domain}`;
+  }
+
+  return null;
 }
 
 export async function sendEmail({ to, subject, text, html }) {
-  const from = process.env.SMTP_FROM;
+  const from = getFromAddress();
   if (!from) {
-    console.warn("SMTP_FROM is not configured; email skipped");
+    console.warn("RESEND_FROM or RESEND_DOMAIN is not configured; email skipped");
     return;
   }
 
-  if (!transporter) {
-    transporter = createTransporter();
-  }
-
-  if (!transporter) {
-    console.warn("SMTP is not configured; email skipped");
+  const client = getResendClient();
+  if (!client) {
+    console.warn("RESEND_API_KEY is not configured; email skipped");
     return;
   }
 
-  await transporter.sendMail({
+  await client.emails.send({
     from,
     to,
     subject,

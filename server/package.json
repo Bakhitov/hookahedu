@@ -20,9 +20,9 @@
     "helmet": "^7.1.0",
     "jsonwebtoken": "^9.0.2",
     "multer": "^2.0.2",
-    "nodemailer": "^7.0.12",
     "pdf-lib": "^1.17.1",
     "pg": "^8.13.1",
+    "resend": "^4.3.0",
     "winston": "^3.19.0",
     "zod": "^3.25.76"
   },
