@@ -1,0 +1,45 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: welcome_page_postgres
+    environment:
+      POSTGRES_DB: welcome_page
+      POSTGRES_USER: welcome_admin
+      POSTGRES_PASSWORD: welcome_admin
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U welcome_admin -d welcome_page"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  api:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: welcome_page_api
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file:
+      - ./server/.env
+    environment:
+      DATABASE_URL: postgres://welcome_admin:welcome_admin@postgres:5432/welcome_page
+      CORS_ORIGIN: http://localhost:8080
+      COOKIE_SECURE: "false"
+    ports:
+      - "4000:4000"
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: welcome_page_web
+    depends_on:
+      - api
+    ports:
+      - "8080:80"
+
+volumes:
+  postgres_data:

@@ -1,0 +1,154 @@
+@import url("https://fonts.cdnfonts.com/css/intro");
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    --background: 36 18% 97%;
+    --foreground: 20 12% 12%;
+
+    --card: 0 0% 99%;
+    --card-foreground: 20 12% 12%;
+
+    --popover: 0 0% 99%;
+    --popover-foreground: 20 12% 12%;
+
+    --primary: 154 35% 34%;
+    --primary-foreground: 0 0% 98%;
+
+    --secondary: 220 8% 92%;
+    --secondary-foreground: 220 8% 18%;
+
+    --muted: 220 8% 94%;
+    --muted-foreground: 220 6% 40%;
+
+    --accent: 220 6% 24%;
+    --accent-foreground: 0 0% 98%;
+
+    --destructive: 0 72% 50%;
+    --destructive-foreground: 0 85% 97%;
+
+    --border: 220 8% 86%;
+    --input: 220 8% 86%;
+    --ring: 154 35% 34%;
+
+    --radius: 0.5rem;
+
+    --sidebar-background: 36 16% 96%;
+    --sidebar-foreground: 20 12% 12%;
+    --sidebar-primary: 154 35% 34%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 220 8% 90%;
+    --sidebar-accent-foreground: 20 12% 12%;
+    --sidebar-border: 220 8% 86%;
+    --sidebar-ring: 154 35% 34%;
+
+    --chart-1: 154 35% 34%;
+    --chart-2: 220 6% 40%;
+    --chart-3: 200 8% 48%;
+    --chart-4: 220 8% 55%;
+    --chart-5: 220 5% 35%;
+
+    --sidebar: 36 16% 96%;
+
+    --font-sans: "Intro", "Helvetica Neue", Arial, sans-serif;
+    --font-serif: "Intro", "Helvetica Neue", Arial, sans-serif;
+    --font-mono: "SF Mono", ui-monospace, monospace;
+
+    --shadow-glow: 0 0 30px hsl(154 35% 34% / 0.18);
+    --shadow-card: 0 6px 18px hsl(20 20% 15% / 0.08);
+    --gradient-gold: linear-gradient(135deg, hsl(154 35% 38%) 0%, hsl(220 6% 40%) 100%);
+    --gradient-dark: linear-gradient(180deg, hsl(36 18% 97%) 0%, hsl(220 8% 92%) 100%);
+    --shadow-2xs: 0 1px 2px 0px hsl(20 20% 20% / 0.06);
+    --shadow-xs: 0 1px 3px 0px hsl(20 20% 20% / 0.08);
+    --shadow-sm: 0 2px 6px 0px hsl(20 20% 20% / 0.1);
+    --shadow: 0 2px 8px 0px hsl(20 20% 20% / 0.12);
+    --shadow-md: 0 4px 12px 0px hsl(20 20% 20% / 0.14);
+    --shadow-lg: 0 6px 18px 0px hsl(20 20% 20% / 0.16);
+    --shadow-xl: 0 8px 24px 0px hsl(20 20% 20% / 0.18);
+    --shadow-2xl: 0 10px 30px 0px hsl(20 20% 20% / 0.2);
+  }
+
+  .dark {
+    --background: 220 10% 6%;
+    --foreground: 40 12% 95%;
+
+    --card: 220 10% 10%;
+    --card-foreground: 40 12% 95%;
+
+    --popover: 220 10% 8%;
+    --popover-foreground: 40 12% 95%;
+
+    --primary: 154 35% 45%;
+    --primary-foreground: 220 10% 6%;
+
+    --secondary: 220 8% 16%;
+    --secondary-foreground: 40 12% 95%;
+
+    --muted: 220 8% 20%;
+    --muted-foreground: 220 6% 65%;
+
+    --accent: 220 8% 70%;
+    --accent-foreground: 220 10% 6%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 85% 97%;
+
+    --border: 220 8% 18%;
+    --input: 220 8% 18%;
+    --ring: 154 35% 45%;
+    --sidebar-background: 220 10% 8%;
+    --sidebar-foreground: 40 12% 95%;
+    --sidebar-primary: 154 35% 45%;
+    --sidebar-primary-foreground: 220 10% 6%;
+    --sidebar-accent: 220 8% 16%;
+    --sidebar-accent-foreground: 40 12% 95%;
+    --sidebar-border: 220 8% 18%;
+    --sidebar-ring: 154 35% 45%;
+    --chart-1: 154 35% 45%;
+    --chart-2: 220 8% 62%;
+    --chart-3: 200 12% 52%;
+    --chart-4: 220 8% 55%;
+    --chart-5: 220 6% 40%;
+    --sidebar: 220 10% 8%;
+    --shadow-glow: 0 0 30px hsl(154 35% 45% / 0.18);
+    --shadow-card: 0 4px 20px hsl(0 0% 0% / 0.3);
+    --gradient-gold: linear-gradient(135deg, hsl(154 35% 48%) 0%, hsl(220 6% 35%) 100%);
+    --gradient-dark: linear-gradient(180deg, hsl(220 10% 6%) 0%, hsl(220 10% 12%) 100%);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-sans);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.6s ease-out forwards;
+}
