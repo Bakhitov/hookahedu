@@ -136,6 +136,18 @@ function createRegistrationToken() {
   return crypto.randomBytes(24).toString("hex");
 }
 
+function getPublicAppUrl() {
+  const explicit = process.env.PUBLIC_APP_URL;
+  const fallback = process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(",")[0] : null;
+  const base = explicit || fallback;
+  return base ? base.replace(/\/+$/, "") : null;
+}
+
+function buildRegistrationUrl(token) {
+  const base = getPublicAppUrl();
+  return base ? `${base}/register/${token}` : null;
+}
+
 function createCertificateNumber() {
   const datePart = new Date().toISOString().slice(0, 10).replace(/-/g, "");
   const rand = crypto.randomInt(1000, 9999);
@@ -621,6 +633,7 @@ app.post("/api/employees", requireAdmin, async (req, res) => {
   }
 
   const token = createRegistrationToken();
+  const registrationUrl = buildRegistrationUrl(token);
 
   try {
     const establishment = await query(
@@ -664,6 +677,16 @@ app.post("/api/employees", requireAdmin, async (req, res) => {
       ...stripEmployee(result.rows[0]),
       registration_link: `/register/${token}`,
     });
+
+    if (registrationUrl) {
+      sendEmail({
+        to: parsed.data.email.toLowerCase(),
+        subject: "Ссылка для регистрации",
+        text: `Здравствуйте, ${parsed.data.fullName}. Для регистрации перейдите по ссылке: ${registrationUrl}`,
+      }).catch((error) => console.warn("Registration email send failed", error));
+    } else {
+      console.warn("PUBLIC_APP_URL is not configured; registration email skipped");
+    }
   } catch (error) {
     if (error.code === "23505") {
       return res.status(409).json({ error: "Employee email already exists" });
@@ -691,6 +714,7 @@ app.post("/api/employees/bulk", requireAdmin, async (req, res) => {
   }
 
   const client = await pool.connect();
+  const emailQueue = [];
   try {
     await client.query("BEGIN");
     const created = [];
@@ -710,6 +734,7 @@ app.post("/api/employees/bulk", requireAdmin, async (req, res) => {
 
     for (const employee of parsed.data.employees) {
       const token = createRegistrationToken();
+      const registrationUrl = buildRegistrationUrl(token);
       const result = await client.query(
         `INSERT INTO employees (establishment_id, full_name, email, city, phone, status, registration_token)
          VALUES ($1, $2, $3, $4, $5, 'pending_registration', $6)
@@ -727,6 +752,13 @@ app.post("/api/employees/bulk", requireAdmin, async (req, res) => {
         ...stripEmployee(result.rows[0]),
         registration_link: `/register/${token}`,
       });
+      if (registrationUrl) {
+        emailQueue.push({
+          email: employee.email.toLowerCase(),
+          name: employee.fullName,
+          registrationUrl,
+        });
+      }
       await recordEmployeeTransfer(client, {
         employeeId: result.rows[0].id,
         fromEstablishmentId: null,
@@ -745,6 +777,18 @@ app.post("/api/employees/bulk", requireAdmin, async (req, res) => {
     });
 
     res.status(201).json({ created });
+
+    if (emailQueue.length) {
+      for (const entry of emailQueue) {
+        sendEmail({
+          to: entry.email,
+          subject: "Ссылка для регистрации",
+          text: `Здравствуйте, ${entry.name}. Для регистрации перейдите по ссылке: ${entry.registrationUrl}`,
+        }).catch((error) => console.warn("Registration email send failed", error));
+      }
+    } else if (!getPublicAppUrl()) {
+      console.warn("PUBLIC_APP_URL is not configured; registration emails skipped");
+    }
   } catch (error) {
     await client.query("ROLLBACK");
     if (error.code === "23505") {
